@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class StudentJdbcRepository {
+	
 	@Autowired
 	JdbcTemplate jdbcTemplate;
 
