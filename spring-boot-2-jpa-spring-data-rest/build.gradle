@@ -1,5 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'idea'
 
 group = 'com.in28minutes.springboot.rest.example'
 version = '0.0.1-SNAPSHOT'
@@ -12,19 +13,32 @@ tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
 }
 
-
-
 repositories {
-        
-     maven { url "https://repo.spring.io/snapshot" }
-     maven { url "https://repo.spring.io/milestone" }
-     maven { url "http://repo.maven.apache.org/maven2" }
+     maven { url = "https://repo.spring.io/snapshot" }
+     maven { url = "https://repo.spring.io/milestone" }
+     maven { url = "http://repo.maven.apache.org/maven2" }
+     maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
 }
+
+sourceSets {
+    main.java.srcDir "src/main/java"
+    main.resources.srcDir "src/main/resources"
+    test.java.srcDir "src/test/java"
+    test.resources.srcDir "src/test/resources"
+}
+
 dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version:'2.0.0.RELEASE'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-rest', version:'2.0.0.RELEASE'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version:'2.0.0.RELEASE'
+
+    compile group: 'io.rest-assured', name: 'rest-assured', version: '3.1.0'
+    compile group: 'io.rest-assured', name: 'json-schema-validator', version: '3.1.0'
+
     runtime group: 'org.springframework.boot', name: 'spring-boot-devtools', version:'2.0.0.RELEASE'
     runtime group: 'com.h2database', name: 'h2', version:'1.4.196'
+
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version:'2.0.0.RELEASE'
+
+
 }
