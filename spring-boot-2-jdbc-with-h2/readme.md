@@ -5,111 +5,39 @@ Current Directory : /in28Minutes/git/spring-boot-examples/spring-boot-2-jdbc-wit
 ## Complete Code Example
 
 
-### /pom.xml
+### Gradle
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+```gradle
+apply plugin: 'java'
+apply plugin: 'maven'
 
-	<groupId>com.in28minutes.springboot.rest.example</groupId>
-	<artifactId>spring-boot-2-jdbc-with-h2</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+group = 'com.in28minutes.springboot.rest.example'
+version = '0.0.1-SNAPSHOT'
 
-	<name>spring-boot-2-jdbc-with-h2</name>
-	<description>Spring Boot 2, JDBC and H2 - Example Project</description>
+description = """spring-boot-2-jdbc-with-h2"""
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.0.0.RELEASE</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<java.version>1.8</java.version>
-	</properties>
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
 
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jdbc</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-devtools</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
-
-	<repositories>
-		<repository>
-			<id>spring-snapshots</id>
-			<name>Spring Snapshots</name>
-			<url>https://repo.spring.io/snapshot</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/milestone</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>spring-snapshots</id>
-			<name>Spring Snapshots</name>
-			<url>https://repo.spring.io/snapshot</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</pluginRepository>
-		<pluginRepository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/milestone</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
-
-
-</project>
+repositories {
+        
+     maven { url "https://repo.spring.io/snapshot" }
+     maven { url "https://repo.spring.io/milestone" }
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc', version:'2.0.0.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version:'2.0.0.RELEASE'
+    compile group: 'org.springframework', name: 'spring-test', version:'5.0.4.RELEASE'
+    runtime group: 'org.springframework.boot', name: 'spring-boot-devtools', version:'2.0.0.RELEASE'
+    runtime group: 'com.h2database', name: 'h2', version:'1.4.196'
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version:'2.0.0.RELEASE'
+    testCompile group: 'org.assertj', name: 'assertj-core', version:'3.9.1'
+}
 ```
 ---
 
@@ -315,22 +243,182 @@ create table student
 ```
 ---
 
-### /src/test/java/com/in28minutes/springboot/jdbc/h2/example/SpringBoot2JdbcWithH2ApplicationTests.java
+### com.in28minutes.springboot.jdbc.h2.example.TestRepositoryConfiguration
+### Bean Configuration to be used on Test Cases
 
 ```java
 package com.in28minutes.springboot.jdbc.h2.example;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import com.in28minutes.springboot.jdbc.h2.example.student.StudentJdbcRepository;
+
+@Configuration
+public class TestRepositoryConfiguration {
+
+	@Bean
+	public StudentJdbcRepository getStudentJdbcRepository() {
+		return new StudentJdbcRepository();
+	}
+	
+}
+```
+
+### Test against H2 Database
+```java
+package com.in28minutes.springboot.jdbc.h2.example;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-@RunWith(SpringRunner.class)
+import com.in28minutes.springboot.jdbc.h2.example.student.Student;
+import com.in28minutes.springboot.jdbc.h2.example.student.StudentJdbcRepository;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@JdbcTest
 @SpringBootTest
+@ContextConfiguration(classes = TestRepositoryConfiguration.class, 
+		loader = AnnotationConfigContextLoader.class)
 public class SpringBoot2JdbcWithH2ApplicationTests {
+	
+	@Autowired
+	StudentJdbcRepository studentRepo;
+	
+	@Test
+	public void contextLoads() {
+	}
+
+	@Test
+	public void selectOneSpecificStudentTest() {
+		final Student studentLocal = new Student(10001L, "Ranga", "E1234567");
+
+		final long id = 10001;
+		final Student student = studentRepo.findById(id);
+
+		assertThat(student).isNotNull();
+		assertThat(studentLocal).isEqualToComparingFieldByField(student);
+	}
+
+	@Test
+	public void selectAllStudentsTest() {
+		final List<Student> allStudents = studentRepo.findAll();
+		
+		assertThat(allStudents).isNotEmpty();
+		assertThat(allStudents).hasSize(2);
+	}
+	
+	@Test
+	public void deleteOneStudentById() {
+		final int rowsAffected = 1;
+		final long id = 10001;
+		
+		assertThat(studentRepo.deleteById(id)).isEqualTo(rowsAffected);
+		assertThat(studentRepo.findAll()).hasSize(1);
+	}
+	
+	@Test
+	public void insertOneStudentTest() {
+		final Student studentLocal = new Student(10003L, "Michael", "E12345679");
+
+		int rowsAffected = studentRepo.insert(studentLocal);
+		assertThat(rowsAffected).isEqualTo(1);
+	}
+	
+}
+```
+
+### Tests with Mockito
+```java
+package com.in28minutes.springboot.jdbc.h2.example;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import com.in28minutes.springboot.jdbc.h2.example.student.Student;
+import com.in28minutes.springboot.jdbc.h2.example.student.StudentJdbcRepository;
+
+@RunWith(MockitoJUnitRunner.class)
+public class SpringBoot2JdbcWithH2ApplicationWithMockTests {
+
+	@Mock
+	StudentJdbcRepository studentRepo;
 
 	@Test
 	public void contextLoads() {
+	}
+
+	@Test
+	public void selectOneSpecificStudentTest() {
+		final Student studentLocal = new Student(10001L, "Ranga", "E1234567");
+		final long id = 10001;
+
+		when(studentRepo.findById(id)).thenReturn(studentLocal);
+
+		final Student student = studentRepo.findById(id);
+
+		assertThat(student).isNotNull();
+		assertThat(studentLocal).isEqualToComparingFieldByField(student);
+	}
+
+	@Test
+	public void selectAllStudentsTest() {
+		when(studentRepo.findAll()).thenReturn(new ArrayList<Student>(
+				Arrays.asList(new Student(10001L, "Ranga", "E1234567"), new Student(10002L, "Ravi", "A1234568"))));
+
+		final List<Student> allStudents = studentRepo.findAll();
+
+		assertThat(allStudents).isNotEmpty();
+		assertThat(allStudents).hasSize(2);
+	}
+
+	@Test
+	public void deleteOneStudentTest() {
+		final long id = 10001;
+		final int rowsAffected = 1;
+
+		when(studentRepo.deleteById(id)).thenReturn(rowsAffected);
+
+		assertThat(studentRepo.deleteById(id)).isEqualTo(rowsAffected);
+	}
+
+	@Test
+	public void insertOneStudentTest() {
+		final int rowsAffected = 1;
+		final Student student = new Student(10003L, "Michael", "A1234569");
+		
+		when(studentRepo.insert(student)).thenReturn(rowsAffected);
+		
+		assertThat(studentRepo.insert(student)).isEqualTo(rowsAffected);
+	}
+
+	@Test
+	public void updateOneStudentTest() {
+		final int rowsAffected = 1;
+		final Student student = new Student(10001L, "John", "E1234567");
+		
+		when(studentRepo.update(student)).thenReturn(1);
+		
+		assertThat(studentRepo.update(student)).isEqualTo(rowsAffected);
 	}
 
 }
